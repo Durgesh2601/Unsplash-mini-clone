@@ -1,0 +1,16 @@
+.conatiner{
+    width: 82%;
+    margin: auto;
+    margin-top: 3%;
+    display: flex;
+    gap: 3%;
+    flex-wrap: wrap;
+}
+.postDiv{
+    border-radius: 15px;
+    cursor: pointer;
+    box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+}
+.postDiv > img{
+    border-radius: 15px;
+}
