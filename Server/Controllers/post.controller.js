@@ -4,7 +4,7 @@ const Post = require("../Models/post.model");
 
 router.post("/", async(req, res) => {
     const {label, pic} = req.body;
-    if(!label || !pic) {
+    if(!pic) {
        return res.status(422).send({error : "Please add a picture"});
     }
     try {
@@ -20,7 +20,7 @@ router.post("/", async(req, res) => {
 
 router.get("/", async(req, res) => {
     try {
-        const posts = await Post.find().lean().exec();
+        const posts = await Post.find().sort('-createdAt').lean().exec();
         return res.status(200).send(posts);
     } catch (error) {
         return res.status(500).send(error.message);

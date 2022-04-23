@@ -8,8 +8,11 @@ import Grid from '@mui/material/Grid';
 import {Button, Input} from '@mui/material';
 import Masonry from '@mui/lab/Masonry';
 import Modal from '@mui/material/Modal';
-import {DropzoneArea} from 'material-ui-dropzone'
+import {DropzoneArea} from 'material-ui-dropzone';
+import LinearProgress from '@mui/material/LinearProgress';
 import React, { useState, useEffect } from 'react';
+import { BsCheckCircle } from "react-icons/bs";
+//BsCheckCircle
 
 const style = {
     position: 'absolute',
@@ -19,33 +22,74 @@ const style = {
     width: 400,
     bgcolor: 'background.paper',
     boxShadow: 24,
-    p: 10,
+    p: 14,
   };
 export const Homepage = () => {
    const [posts, setPosts] = useState([]);
-   const [open, setOpen] = React.useState(false);
+   const [open, setOpen] = useState(false);
+   const [image, setImage] = useState("");
+   const [url, setUrl] = useState("");
+   const [uploading, setUploading] = useState(false);
+   const [success, setSuccess] = useState(false);
    const handleOpen = () => setOpen(true);
-   const handleClose = () => setOpen(false);
+   const handleClose = () => {
+     setOpen(false)
+    setSuccess(false);
+  }
    useEffect(() => {
-    getPosts();
-   },[])
+   getPosts();
+    if(url) {
+      fetch("http://localhost:3000/", {
+           method : "POST",
+           body: JSON.stringify({
+             pic : url
+           }),
+           headers: {
+            'Content-Type': 'application/json',
+          },
+         }).then((d) => d.json()).then((res) => {
+          console.log(res);
+        }).catch((err) => {
+            console.log(err);
+          })
+      setUploading(false);
+      setSuccess(true);
+      getPosts();
+    }
+
+   },[url]);
+   if(success) {
+     console.log(posts[0]);
+   }
+
+   const postData = () => {
+     setUploading(true);
+     const data = new FormData();
+     data.append("file", image);
+     data.append("upload_preset", "unsplash-mini-clone");
+     data.append("cloud_name", "Unsplash")
+     fetch("https://api.cloudinary.com/v1_1/Unsplash/image/upload", {
+       method : "POST",
+       body : data
+     }).then((res) => res.json()).then((d) => {
+       setUrl(d.url)
+      }).catch((err) => {
+         console.log(err);
+       }) 
+   }
    const getPosts = () => {
        fetch("http://localhost:3000/").then((d) => d.json()).then((res) => {
            setPosts(res);
        });
    }
    const handleFile = (e) => {
-     console.log(e.target);
+     setImage(e[0])
    }
-//    const mouseEnter = (e) => {
-//      e.target.style.visibility="visible";
-//      console.log(e)
-//    }
-//    const onMouseLeave = (e) => {
-//     e.target.style.visibility="hidden";
-//  }
-   
-    return (<>
+   const handleChange = (e) =>{
+     setImage(e.target.files[0])
+   }
+
+     return (<>
     <Box sx={{ flexGrow: 1 }} >
       <AppBar position="static" color="transparent">
         <Toolbar>
@@ -70,37 +114,48 @@ export const Homepage = () => {
               srcSet={`${e.pic}?w=162&auto=format&dpr=2 2x`}
               alt={e.label}
               loading="lazy"
-              style={{
-                  borderBottomLeftRadius: 4,
-                  borderBottomRightRadius: 4,
-                  display: 'block',
-                  width: '100%',
-                }}
-                />
-            {/* <Typography variant="p" component="div" align="center" style={{backgroundColor:"black", color:"white"}} onMouseEnter={mouseEnter} onMouseLeave={onMouseLeave}>{e.label}</Typography> */}
+              style={{borderBottomLeftRadius: 4, borderBottomRightRadius: 4, display: 'block', width: '100%',}}/>
           </div>
         ))}
       </Masonry>
     </Box>
     </div>
-    <Modal open={open} onClose={handleClose} aria-labelledby="modal-modal-title" aria-describedby="modal-modal-description">
-    <Box sx={style}>
-    <Typography id="modal-modal-title" variant="h4" component="h3" align="center">
-      Upload your image
-    </Typography>
+    {!uploading && !success ? (
 
-    <Typography id="modal-modal-description" align="center" varaiant="subtitle2" mt={2}>
-      File should be Jpeg, Png...
-    </Typography> <br />
+    <Modal open={open} onClose={handleClose} aria-labelledby="modal-modal-title" aria-describedby="modal-modal-description">
+    <Box sx={style} style={{borderRadius:"15px"}}>
+    <Typography id="modal-modal-title" variant="h4" component="h3" align="center">Upload your image</Typography>
+    <Typography id="modal-modal-description" align="center" varaiant="subtitle2" mt={2}>File should be Jpeg, Png...</Typography> <br/>
     <DropzoneArea
-        onChange={handleFile}
-        acceptedFiles={['image/jpeg', 'image/png', 'image/bmp']}/>
-        <p style={{textAlign:"center"}}>or</p>
-        <Button variant="contained" sx={{mt:2, ml:17}} align="center">Choose a file</Button>
-        <label htmlFor="contained-button-file">
-        <Input accept="image/*" id="contained-button-file" multiple type="file" />
-        <Button variant="contained" component="span">Upload</Button></label>
+    onChange={handleFile}
+    acceptedFiles={['image/jpeg', 'image/png', 'image/bmp']}/>
+    <p style={{textAlign:"center"}}>or</p>
+    <Input accept="image/*" id="contained-button-file" type="file" onChange={handleChange} />
+    <Button variant="contained" component="span" onClick={postData}>Upload</Button>
     </Box>
     </Modal>
+    ) : (
+
+      <Modal open={open} onClose={handleClose} aria-labelledby="modal-modal-title" aria-describedby="modal-modal-description">
+      <Box sx={style} style={{width : "18%", height:"3%", borderRadius:"15px"}}>
+      <Typography id="modal-modal-title" variant="h5" component="h3" ml={1} mt={-2}>
+        Uploading</Typography>
+      <LinearProgress sx={{mt:2}} />
+    </Box>
+    </Modal>
+
+    )}
+    {success ? (
+      <Modal open={open} onClose={handleClose} aria-labelledby="modal-modal-title" aria-describedby="modal-modal-description">
+      <Box sx={style} style={{width : "18%", height:"30%", borderRadius:"15px"}}>
+      <div align="center">
+      <BsCheckCircle style={{color:"#219653"}} size={30}/>
+      </div>
+      <Typography id="modal-modal-title" variant="h6" component="h3" align="center">
+        Uploaded Successfully!</Typography>
+        <img src={url} alt="" height="100%" width="80%" className="uploadedImg"/>
+    </Box>
+    </Modal>
+    ) : null} 
     </>)
 }

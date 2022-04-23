@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 const postShcema = new mongoose.Schema({
-    label : {type:String, required:true},
+    label : {type:String, required:false},
     pic  : {type: String, required:true},
 },
 {timestamps : true, 
