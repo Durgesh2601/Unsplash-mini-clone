@@ -5,13 +5,27 @@ import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
 import Grid from '@mui/material/Grid';
-import Button from '@mui/material/Button';
+import {Button, Input} from '@mui/material';
 import Masonry from '@mui/lab/Masonry';
+import Modal from '@mui/material/Modal';
+import {DropzoneArea} from 'material-ui-dropzone'
 import React, { useState, useEffect } from 'react';
 
-
+const style = {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: 400,
+    bgcolor: 'background.paper',
+    boxShadow: 24,
+    p: 10,
+  };
 export const Homepage = () => {
    const [posts, setPosts] = useState([]);
+   const [open, setOpen] = React.useState(false);
+   const handleOpen = () => setOpen(true);
+   const handleClose = () => setOpen(false);
    useEffect(() => {
     getPosts();
    },[])
@@ -19,6 +33,9 @@ export const Homepage = () => {
        fetch("http://localhost:3000/").then((d) => d.json()).then((res) => {
            setPosts(res);
        });
+   }
+   const handleFile = (e) => {
+     console.log(e.target);
    }
 //    const mouseEnter = (e) => {
 //      e.target.style.visibility="visible";
@@ -38,7 +55,7 @@ export const Homepage = () => {
           <Typography variant="h5" component="div">Unsplash</Typography>
           <TextField label="Search by name" sx={{ml:10}} style={{width:"35%"}}/>
           <Grid container justifyContent="flex-end">
-          <Button variant="contained" color="success" align="right">Add a photo</Button>
+          <Button variant="contained" color="success" align="right" onClick={handleOpen}>Add a photo</Button>
           </Grid>
         </Toolbar>
       </AppBar>
@@ -66,5 +83,24 @@ export const Homepage = () => {
       </Masonry>
     </Box>
     </div>
+    <Modal open={open} onClose={handleClose} aria-labelledby="modal-modal-title" aria-describedby="modal-modal-description">
+    <Box sx={style}>
+    <Typography id="modal-modal-title" variant="h4" component="h3" align="center">
+      Upload your image
+    </Typography>
+
+    <Typography id="modal-modal-description" align="center" varaiant="subtitle2" mt={2}>
+      File should be Jpeg, Png...
+    </Typography> <br />
+    <DropzoneArea
+        onChange={handleFile}
+        acceptedFiles={['image/jpeg', 'image/png', 'image/bmp']}/>
+        <p style={{textAlign:"center"}}>or</p>
+        <Button variant="contained" sx={{mt:2, ml:17}} align="center">Choose a file</Button>
+        <label htmlFor="contained-button-file">
+        <Input accept="image/*" id="contained-button-file" multiple type="file" />
+        <Button variant="contained" component="span">Upload</Button></label>
+    </Box>
+    </Modal>
     </>)
 }
