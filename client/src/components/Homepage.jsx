@@ -12,6 +12,7 @@ import {DropzoneArea} from 'material-ui-dropzone';
 import LinearProgress from '@mui/material/LinearProgress';
 import React, { useState, useEffect } from 'react';
 import { BsCheckCircle } from "react-icons/bs";
+import InfiniteScroll from "react-infinite-scroll-component";
 //BsCheckCircle
 
 const style = {
@@ -31,15 +32,17 @@ export const Homepage = () => {
    const [url, setUrl] = useState("");
    const [uploading, setUploading] = useState(false);
    const [success, setSuccess] = useState(false);
+   const [page, setPage] = useState(1);
    const handleOpen = () => setOpen(true);
    const handleClose = () => {
      setOpen(false)
     setSuccess(false);
   }
    useEffect(() => {
-   getPosts();
+    getAllData();
+   getPosts(page);
     if(url) {
-      fetch("http://localhost:3000/", {
+      fetch("https://unsplashdk.herokuapp.com/", {
            method : "POST",
            body: JSON.stringify({
              pic : url
@@ -54,14 +57,16 @@ export const Homepage = () => {
           })
       setUploading(false);
       setSuccess(true);
-      getPosts();
+      getPosts(page);
     }
 
-   },[url]);
-   if(success) {
-     console.log(posts[0]);
+   },[url, page]);
+   
+   const getAllData = () => {
+     fetch("https://unsplashdk.herokuapp.com/").then((d) => d.json()).then((res) => {
+       console.log(res.length);
+     })
    }
-
    const postData = () => {
      setUploading(true);
      const data = new FormData();
@@ -77,8 +82,8 @@ export const Homepage = () => {
          console.log(err);
        }) 
    }
-   const getPosts = () => {
-       fetch("http://localhost:3000/").then((d) => d.json()).then((res) => {
+   const getPosts = (page=1) => {
+       fetch(`https://unsplashdk.herokuapp.com/?page=${page}&size=6`).then((d) => d.json()).then((res) => {
            setPosts(res);
        });
    }
@@ -89,8 +94,21 @@ export const Homepage = () => {
      setImage(e.target.files[0])
    }
 
-     return (<>
-    <Box sx={{ flexGrow: 1 }} >
+  //  const scrollToEnd = () => {
+  //     setPage(page+1);
+  //  }
+
+  //  window.onscroll = function () {
+  //    if(window.innerHeight + document.documentElement.scrollTop >= document.documentElement.offsetHeight) {
+  //      scrollToEnd()
+  //    }
+  //  }
+  const fetchMoreData = () => {
+    setPage(page+1);
+  }
+
+     return (<div>
+      <Box sx={{ flexGrow: 1 }} >
       <AppBar position="static" color="transparent">
         <Toolbar>
           <div style={{marginLeft:"10%"}}>
@@ -104,6 +122,11 @@ export const Homepage = () => {
         </Toolbar>
       </AppBar>
     </Box>
+    <InfiniteScroll
+          dataLength={posts.length}
+          next={fetchMoreData}
+          hasMore={true}
+          loader={<h4>Loading...</h4>}>
     <div className="conatiner">
     <Box sx={{ width: 1300, minHeight: 829 }}>
       <Masonry columns={3} spacing={4}>
@@ -120,6 +143,7 @@ export const Homepage = () => {
       </Masonry>
     </Box>
     </div>
+    </InfiniteScroll>
     {!uploading && !success ? (
 
     <Modal open={open} onClose={handleClose} aria-labelledby="modal-modal-title" aria-describedby="modal-modal-description">
@@ -157,5 +181,5 @@ export const Homepage = () => {
     </Box>
     </Modal>
     ) : null} 
-    </>)
+    </div>)
 }
