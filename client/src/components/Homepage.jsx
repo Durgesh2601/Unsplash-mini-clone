@@ -73,22 +73,27 @@ export const Homepage = () => {
       });
   };
   const postData = () => {
-    setUploading(true);
-    const data = new FormData();
-    data.append("file", image);
-    data.append("upload_preset", "unsplash-mini-clone");
-    data.append("cloud_name", "Unsplash");
-    fetch("https://api.cloudinary.com/v1_1/Unsplash/image/upload", {
-      method: "POST",
-      body: data,
-    })
-      .then((res) => res.json())
-      .then((d) => {
-        setUrl(d.url);
+    if(image) {
+
+      setUploading(true);
+      const data = new FormData();
+      data.append("file", image);
+      data.append("upload_preset", "unsplash-mini-clone");
+      data.append("cloud_name", "Unsplash");
+      fetch("https://api.cloudinary.com/v1_1/Unsplash/image/upload", {
+        method: "POST",
+        body: data,
       })
-      .catch((err) => {
-        console.log(err);
-      });
+        .then((res) => res.json())
+        .then((d) => {
+          setUrl(d.url);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    } else {
+      alert("Please choose a file");
+    }
   };
   const getPosts = (page = 1) => {
     fetch(`https://unsplashdk.herokuapp.com/?page=${page}&size=10`)
