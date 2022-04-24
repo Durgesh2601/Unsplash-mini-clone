@@ -110,6 +110,7 @@ export const Homepage = () => {
 
   return (
     <div>
+      <div className="navbar">
       <Box sx={{ flexGrow: 1 }}>
         <AppBar position="static" color="transparent">
           <Toolbar>
@@ -143,6 +144,7 @@ export const Homepage = () => {
           </Toolbar>
         </AppBar>
       </Box>
+      </div>
       <InfiniteScroll
         dataLength={posts.length}
         next={fetchMoreData}
