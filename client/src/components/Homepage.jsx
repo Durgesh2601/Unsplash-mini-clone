@@ -113,6 +113,7 @@ export const Homepage = () => {
     setPage(page + 1);
   };
 
+  console.log(posts)
   return (
     <div>
       <div className="navbar">
